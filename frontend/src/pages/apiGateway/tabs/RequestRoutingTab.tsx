@@ -9,7 +9,8 @@ import {
   Switch,
   Select,
   SelectOption,
-  SelectVariant,
+  SelectList,
+  MenuToggle,
   NumberInput,
   Stack,
   StackItem,
@@ -97,25 +98,35 @@ const RequestRoutingTab: React.FC = () => {
                 <>
                   <FormGroup label="Load Balancing Method" fieldId="lb-method" isRequired>
                     <Select
-                      variant={SelectVariant.single}
-                      onToggle={(event, isExpanded) => setLoadBalanceMethodOpen(isExpanded)}
+                      isOpen={loadBalanceMethodOpen}
+                      selected={loadBalanceMethod}
                       onSelect={(event, selection) => {
                         setLoadBalanceMethod(selection as string);
                         setLoadBalanceMethodOpen(false);
                       }}
-                      selections={loadBalanceMethod}
-                      isOpen={loadBalanceMethodOpen}
-                      placeholderText="Select load balancing method"
-                    >
-                      {loadBalanceMethods.map(method => (
-                        <SelectOption
-                          key={method.value}
-                          value={method.value}
-                          description={method.description}
+                      onOpenChange={(isOpen) => setLoadBalanceMethodOpen(isOpen)}
+                      toggle={(toggleRef) => (
+                        <MenuToggle
+                          ref={toggleRef}
+                          onClick={() => setLoadBalanceMethodOpen(!loadBalanceMethodOpen)}
+                          isExpanded={loadBalanceMethodOpen}
+                          isFullWidth
                         >
-                          {method.label}
-                        </SelectOption>
-                      ))}
+                          {loadBalanceMethods.find(method => method.value === loadBalanceMethod)?.label || "Select load balancing method"}
+                        </MenuToggle>
+                      )}
+                    >
+                      <SelectList>
+                        {loadBalanceMethods.map(method => (
+                          <SelectOption
+                            key={method.value}
+                            value={method.value}
+                            description={method.description}
+                          >
+                            {method.label}
+                          </SelectOption>
+                        ))}
+                      </SelectList>
                     </Select>
                   </FormGroup>
 
@@ -236,20 +247,31 @@ const RequestRoutingTab: React.FC = () => {
                   <GridItem span={4}>
                     <FormGroup label="Backoff Strategy" fieldId="retry-backoff">
                       <Select
-                        variant={SelectVariant.single}
-                        onToggle={(event, isExpanded) => setRetryBackoffOpen(isExpanded)}
+                        isOpen={retryBackoffOpen}
+                        selected={retryBackoff}
                         onSelect={(event, selection) => {
                           setRetryBackoff(selection as string);
                           setRetryBackoffOpen(false);
                         }}
-                        selections={retryBackoff}
-                        isOpen={retryBackoffOpen}
+                        onOpenChange={(isOpen) => setRetryBackoffOpen(isOpen)}
+                        toggle={(toggleRef) => (
+                          <MenuToggle
+                            ref={toggleRef}
+                            onClick={() => setRetryBackoffOpen(!retryBackoffOpen)}
+                            isExpanded={retryBackoffOpen}
+                            isFullWidth
+                          >
+                            {retryBackoffMethods.find(method => method.value === retryBackoff)?.label || "Select backoff strategy"}
+                          </MenuToggle>
+                        )}
                       >
-                        {retryBackoffMethods.map(method => (
-                          <SelectOption key={method.value} value={method.value}>
-                            {method.label}
-                          </SelectOption>
-                        ))}
+                        <SelectList>
+                          {retryBackoffMethods.map(method => (
+                            <SelectOption key={method.value} value={method.value}>
+                              {method.label}
+                            </SelectOption>
+                          ))}
+                        </SelectList>
                       </Select>
                     </FormGroup>
                   </GridItem>

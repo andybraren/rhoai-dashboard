@@ -9,7 +9,8 @@ import {
   Switch,
   Select,
   SelectOption,
-  SelectVariant,
+  SelectList,
+  MenuToggle,
   NumberInput,
   Stack,
   StackItem,
@@ -356,45 +357,66 @@ const ScalingTab: React.FC = () => {
                     <GridItem span={6}>
                       <FormGroup label="Cache Type" fieldId="cache-type" isRequired>
                         <Select
-                          variant={SelectVariant.single}
-                          onToggle={(event, isExpanded) => setCacheTypeOpen(isExpanded)}
+                          isOpen={cacheTypeOpen}
+                          selected={cacheType}
                           onSelect={(event, selection) => {
                             setCacheType(selection as string);
                             setCacheTypeOpen(false);
                           }}
-                          selections={cacheType}
-                          isOpen={cacheTypeOpen}
-                          placeholderText="Select cache type"
-                        >
-                          {cacheTypes.map(type => (
-                            <SelectOption
-                              key={type.value}
-                              value={type.value}
-                              description={type.description}
+                          onOpenChange={(isOpen) => setCacheTypeOpen(isOpen)}
+                          toggle={(toggleRef) => (
+                            <MenuToggle
+                              ref={toggleRef}
+                              onClick={() => setCacheTypeOpen(!cacheTypeOpen)}
+                              isExpanded={cacheTypeOpen}
+                              isFullWidth
                             >
-                              {type.label}
-                            </SelectOption>
-                          ))}
+                              {cacheTypes.find(type => type.value === cacheType)?.label || "Select cache type"}
+                            </MenuToggle>
+                          )}
+                        >
+                          <SelectList>
+                            {cacheTypes.map(type => (
+                              <SelectOption
+                                key={type.value}
+                                value={type.value}
+                                description={type.description}
+                              >
+                                {type.label}
+                              </SelectOption>
+                            ))}
+                          </SelectList>
                         </Select>
                       </FormGroup>
                     </GridItem>
                     <GridItem span={6}>
                       <FormGroup label="Cache Eviction Policy" fieldId="cache-eviction-policy">
                         <Select
-                          variant={SelectVariant.single}
-                          onToggle={(event, isExpanded) => setCacheEvictionPolicyOpen(isExpanded)}
+                          isOpen={cacheEvictionPolicyOpen}
+                          selected={cacheEvictionPolicy}
                           onSelect={(event, selection) => {
                             setCacheEvictionPolicy(selection as string);
                             setCacheEvictionPolicyOpen(false);
                           }}
-                          selections={cacheEvictionPolicy}
-                          isOpen={cacheEvictionPolicyOpen}
+                          onOpenChange={(isOpen) => setCacheEvictionPolicyOpen(isOpen)}
+                          toggle={(toggleRef) => (
+                            <MenuToggle
+                              ref={toggleRef}
+                              onClick={() => setCacheEvictionPolicyOpen(!cacheEvictionPolicyOpen)}
+                              isExpanded={cacheEvictionPolicyOpen}
+                              isFullWidth
+                            >
+                              {evictionPolicies.find(policy => policy.value === cacheEvictionPolicy)?.label || "Select policy"}
+                            </MenuToggle>
+                          )}
                         >
-                          {evictionPolicies.map(policy => (
-                            <SelectOption key={policy.value} value={policy.value}>
-                              {policy.label}
-                            </SelectOption>
-                          ))}
+                          <SelectList>
+                            {evictionPolicies.map(policy => (
+                              <SelectOption key={policy.value} value={policy.value}>
+                                {policy.label}
+                              </SelectOption>
+                            ))}
+                          </SelectList>
                         </Select>
                       </FormGroup>
                     </GridItem>

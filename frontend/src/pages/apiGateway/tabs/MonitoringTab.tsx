@@ -9,7 +9,8 @@ import {
   Switch,
   Select,
   SelectOption,
-  SelectVariant,
+  SelectList,
+  MenuToggle,
   NumberInput,
   Stack,
   StackItem,
@@ -189,25 +190,35 @@ const MonitoringTab: React.FC = () => {
                     <GridItem span={6}>
                       <FormGroup label="Log Level" fieldId="log-level" isRequired>
                         <Select
-                          variant={SelectVariant.single}
-                          onToggle={(event, isExpanded) => setLogLevelOpen(isExpanded)}
+                          isOpen={logLevelOpen}
+                          selected={logLevel}
                           onSelect={(event, selection) => {
                             setLogLevel(selection as string);
                             setLogLevelOpen(false);
                           }}
-                          selections={logLevel}
-                          isOpen={logLevelOpen}
-                          placeholderText="Select log level"
-                        >
-                          {logLevels.map(level => (
-                            <SelectOption
-                              key={level.value}
-                              value={level.value}
-                              description={level.description}
+                          onOpenChange={(isOpen) => setLogLevelOpen(isOpen)}
+                          toggle={(toggleRef) => (
+                            <MenuToggle
+                              ref={toggleRef}
+                              onClick={() => setLogLevelOpen(!logLevelOpen)}
+                              isExpanded={logLevelOpen}
+                              isFullWidth
                             >
-                              {level.label}
-                            </SelectOption>
-                          ))}
+                              {logLevels.find(level => level.value === logLevel)?.label || "Select log level"}
+                            </MenuToggle>
+                          )}
+                        >
+                          <SelectList>
+                            {logLevels.map(level => (
+                              <SelectOption
+                                key={level.value}
+                                value={level.value}
+                                description={level.description}
+                              >
+                                {level.label}
+                              </SelectOption>
+                            ))}
+                          </SelectList>
                         </Select>
                       </FormGroup>
                     </GridItem>

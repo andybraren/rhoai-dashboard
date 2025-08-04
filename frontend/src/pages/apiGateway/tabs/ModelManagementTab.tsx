@@ -9,7 +9,8 @@ import {
   Switch,
   Select,
   SelectOption,
-  SelectVariant,
+  SelectList,
+  MenuToggle,
   NumberInput,
   Stack,
   StackItem,
@@ -148,21 +149,31 @@ const ModelManagementTab: React.FC = () => {
 
               <FormGroup label="Model Registry" fieldId="model-registry" isRequired>
                 <Select
-                  variant={SelectVariant.single}
-                  onToggle={(event, isExpanded) => setModelRegistryOpen(isExpanded)}
+                  isOpen={modelRegistryOpen}
+                  selected={modelRegistry}
                   onSelect={(event, selection) => {
                     setModelRegistry(selection as string);
                     setModelRegistryOpen(false);
                   }}
-                  selections={modelRegistry}
-                  isOpen={modelRegistryOpen}
-                  placeholderText="Select model registry"
+                  onOpenChange={(isOpen) => setModelRegistryOpen(isOpen)}
+                  toggle={(toggleRef) => (
+                    <MenuToggle
+                      ref={toggleRef}
+                      onClick={() => setModelRegistryOpen(!modelRegistryOpen)}
+                      isExpanded={modelRegistryOpen}
+                      isFullWidth
+                    >
+                      {modelRegistries.find(registry => registry.value === modelRegistry)?.label || "Select model registry"}
+                    </MenuToggle>
+                  )}
                 >
-                  {modelRegistries.map(registry => (
-                    <SelectOption key={registry.value} value={registry.value}>
-                      {registry.label}
-                    </SelectOption>
-                  ))}
+                  <SelectList>
+                    {modelRegistries.map(registry => (
+                      <SelectOption key={registry.value} value={registry.value}>
+                        {registry.label}
+                      </SelectOption>
+                    ))}
+                  </SelectList>
                 </Select>
               </FormGroup>
 
@@ -212,25 +223,35 @@ const ModelManagementTab: React.FC = () => {
 
               <FormGroup label="Deployment Strategy" fieldId="deployment-strategy" isRequired>
                 <Select
-                  variant={SelectVariant.single}
-                  onToggle={(event, isExpanded) => setDeploymentStrategyOpen(isExpanded)}
+                  isOpen={deploymentStrategyOpen}
+                  selected={deploymentStrategy}
                   onSelect={(event, selection) => {
                     setDeploymentStrategy(selection as string);
                     setDeploymentStrategyOpen(false);
                   }}
-                  selections={deploymentStrategy}
-                  isOpen={deploymentStrategyOpen}
-                  placeholderText="Select deployment strategy"
-                >
-                  {deploymentStrategies.map(strategy => (
-                    <SelectOption
-                      key={strategy.value}
-                      value={strategy.value}
-                      description={strategy.description}
+                  onOpenChange={(isOpen) => setDeploymentStrategyOpen(isOpen)}
+                  toggle={(toggleRef) => (
+                    <MenuToggle
+                      ref={toggleRef}
+                      onClick={() => setDeploymentStrategyOpen(!deploymentStrategyOpen)}
+                      isExpanded={deploymentStrategyOpen}
+                      isFullWidth
                     >
-                      {strategy.label}
-                    </SelectOption>
-                  ))}
+                      {deploymentStrategies.find(strategy => strategy.value === deploymentStrategy)?.label || "Select deployment strategy"}
+                    </MenuToggle>
+                  )}
+                >
+                  <SelectList>
+                    {deploymentStrategies.map(strategy => (
+                      <SelectOption
+                        key={strategy.value}
+                        value={strategy.value}
+                        description={strategy.description}
+                      >
+                        {strategy.label}
+                      </SelectOption>
+                    ))}
+                  </SelectList>
                 </Select>
               </FormGroup>
 

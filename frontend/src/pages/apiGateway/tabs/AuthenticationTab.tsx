@@ -9,7 +9,8 @@ import {
   Switch,
   Select,
   SelectOption,
-  SelectVariant,
+  SelectList,
+  MenuToggle,
   TextArea,
   Stack,
   StackItem,
@@ -94,25 +95,35 @@ const AuthenticationTab: React.FC = () => {
                 <>
                   <FormGroup label="Authentication Method" fieldId="auth-method" isRequired>
                     <Select
-                      variant={SelectVariant.single}
-                      onToggle={(event, isExpanded) => setAuthMethodOpen(isExpanded)}
+                      isOpen={authMethodOpen}
+                      selected={authMethod}
                       onSelect={(event, selection) => {
                         setAuthMethod(selection as string);
                         setAuthMethodOpen(false);
                       }}
-                      selections={authMethod}
-                      isOpen={authMethodOpen}
-                      placeholderText="Select authentication method"
-                    >
-                      {authMethods.map(method => (
-                        <SelectOption
-                          key={method.value}
-                          value={method.value}
-                          description={method.description}
+                      onOpenChange={(isOpen) => setAuthMethodOpen(isOpen)}
+                      toggle={(toggleRef) => (
+                        <MenuToggle
+                          ref={toggleRef}
+                          onClick={() => setAuthMethodOpen(!authMethodOpen)}
+                          isExpanded={authMethodOpen}
+                          isFullWidth
                         >
-                          {method.label}
-                        </SelectOption>
-                      ))}
+                          {authMethods.find(method => method.value === authMethod)?.label || "Select authentication method"}
+                        </MenuToggle>
+                      )}
+                    >
+                      <SelectList>
+                        {authMethods.map(method => (
+                          <SelectOption
+                            key={method.value}
+                            value={method.value}
+                            description={method.description}
+                          >
+                            {method.label}
+                          </SelectOption>
+                        ))}
+                      </SelectList>
                     </Select>
                   </FormGroup>
 
@@ -259,13 +270,22 @@ bindings:
                               <GridItem span={3}>
                                 <FormGroup label="Permissions" fieldId={`apikey-perms-${apiKey.id}`}>
                                   <Select
-                                    variant={SelectVariant.single}
+                                    selected={apiKey.permissions}
                                     onSelect={(event, selection) => updateApiKey(apiKey.id, 'permissions', selection as string)}
-                                    selections={apiKey.permissions}
+                                    toggle={(toggleRef) => (
+                                      <MenuToggle
+                                        ref={toggleRef}
+                                        isFullWidth
+                                      >
+                                        {{admin: 'Admin', user: 'User', readonly: 'Read Only'}[apiKey.permissions] || 'Select permissions'}
+                                      </MenuToggle>
+                                    )}
                                   >
-                                    <SelectOption value="admin">Admin</SelectOption>
-                                    <SelectOption value="user">User</SelectOption>
-                                    <SelectOption value="readonly">Read Only</SelectOption>
+                                    <SelectList>
+                                      <SelectOption value="admin">Admin</SelectOption>
+                                      <SelectOption value="user">User</SelectOption>
+                                      <SelectOption value="readonly">Read Only</SelectOption>
+                                    </SelectList>
                                   </Select>
                                 </FormGroup>
                               </GridItem>
