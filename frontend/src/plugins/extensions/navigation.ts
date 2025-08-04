@@ -508,7 +508,7 @@ const extensions: NavExtension[] = [
       section: 'settings',
       path: '/apiGateway/*',
     },
-  },
+  }
 ];
 
 export default extensions;
