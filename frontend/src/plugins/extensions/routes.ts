@@ -237,6 +237,16 @@ const extensions: RouteExtension[] = [
   },
   {
     type: 'app.route',
+    flags: {
+      required: [SupportedArea.API_GATEWAY],
+    },
+    properties: {
+      path: '/apiGateway/*',
+      component: () => import('#~/pages/apiGateway/ApiGatewayRoutes'),
+    },
+  },
+  {
+    type: 'app.route',
     properties: {
       path: '/hardwareProfiles/*',
       component: () => import('#~/pages/hardwareProfiles/HardwareProfilesRoutes'),

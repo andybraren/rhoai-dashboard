@@ -1280,6 +1280,7 @@ export type DashboardCommonConfig = {
   disableLMEval: boolean;
   disableKueue: boolean;
   disableFeatureStore?: boolean;
+  disableApiGateway: boolean;
 };
 
 // [1] Intentionally disjointed fields from the CRD in this type definition

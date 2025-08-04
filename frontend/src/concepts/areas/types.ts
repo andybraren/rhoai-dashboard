@@ -84,6 +84,9 @@ export enum SupportedArea {
 
   /* Feature store */
   FEATURE_STORE = 'feature-store',
+
+  /* API Gateway */
+  API_GATEWAY = 'api-gateway',
 }
 
 export type SupportedAreaType = SupportedArea | string;

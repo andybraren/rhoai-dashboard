@@ -495,6 +495,20 @@ const extensions: NavExtension[] = [
       },
     },
   },
+
+  {
+    type: 'app.navigation/href',
+    flags: {
+      required: [SupportedArea.API_GATEWAY],
+    },
+    properties: {
+      id: 'settings-api-gateway',
+      title: 'API Gateway',
+      href: '/apiGateway',
+      section: 'settings',
+      path: '/apiGateway/*',
+    },
+  },
 ];
 
 export default extensions;
