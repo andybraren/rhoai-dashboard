@@ -237,9 +237,6 @@ const extensions: RouteExtension[] = [
   },
   {
     type: 'app.route',
-    flags: {
-      required: [SupportedArea.API_GATEWAY],
-    },
     properties: {
       path: '/apiGateway/*',
       component: () => import('#~/pages/apiGateway/ApiGatewayRoutes'),
