@@ -75,13 +75,13 @@ This will:
 2. Start services with Docker Compose or Podman Compose:
    ```bash
    # With Docker
-   docker-compose -f docker-compose.dev.yml up --build
+   docker-compose -f podman-compose.dev.yml up --build
    
    # With Podman (using podman-compose)
-   podman-compose -f docker-compose.dev.yml up --build
+   podman-compose -f podman-compose.dev.yml up --build
    
    # With Podman (using built-in compose)
-   podman compose -f docker-compose.dev.yml up --build
+   podman compose -f podman-compose.dev.yml up --build
    ```
 
 3. Access the dashboard at http://localhost:4010
@@ -197,7 +197,7 @@ If you prefer manual control:
 
 2. **Start services:**
    ```bash
-   docker-compose -f docker-compose.dev.yml up --build
+   docker-compose -f podman-compose.dev.yml up --build
    ```
 
 3. **Verify setup:**
@@ -244,30 +244,30 @@ podman --version
 podman-compose --version  # or: podman compose version
 
 # View logs (use appropriate compose command)
-docker-compose -f docker-compose.dev.yml logs -f
+docker-compose -f podman-compose.dev.yml logs -f
 # OR
-podman-compose -f docker-compose.dev.yml logs -f
+podman-compose -f podman-compose.dev.yml logs -f
 ```
 
 **Dashboard can't connect to KWOK:**
 ```bash
 # Verify KWOK is healthy (use your compose command)
-docker-compose -f docker-compose.dev.yml exec kwok-cluster curl http://localhost:8080/healthz
+docker-compose -f podman-compose.dev.yml exec kwok-cluster curl http://localhost:8080/healthz
 # OR
-podman-compose -f docker-compose.dev.yml exec kwok-cluster curl http://localhost:8080/healthz
+podman-compose -f podman-compose.dev.yml exec kwok-cluster curl http://localhost:8080/healthz
 
 # Check network connectivity
-docker-compose -f docker-compose.dev.yml exec rhoai-dashboard curl http://kwok-cluster:8080/healthz
+docker-compose -f podman-compose.dev.yml exec rhoai-dashboard curl http://kwok-cluster:8080/healthz
 ```
 
 **Reset everything:**
 ```bash
 # Stop and remove all containers/volumes (use your compose command)
-docker-compose -f docker-compose.dev.yml down -v
+docker-compose -f podman-compose.dev.yml down -v
 docker system prune -f
 
 # OR with Podman
-podman-compose -f docker-compose.dev.yml down -v
+podman-compose -f podman-compose.dev.yml down -v
 podman system prune -f
 
 # Start fresh
@@ -280,17 +280,17 @@ podman system prune -f
 2. **Rebuild containers** (if needed):
    ```bash
    # Use your detected compose command, or manually:
-   docker-compose -f docker-compose.dev.yml up --build rhoai-dashboard
+   docker-compose -f podman-compose.dev.yml up --build rhoai-dashboard
    # OR
-   podman-compose -f docker-compose.dev.yml up --build rhoai-dashboard
+   podman-compose -f podman-compose.dev.yml up --build rhoai-dashboard
    ```
 3. **Test changes** at http://localhost:4010
 4. **View logs**:
    ```bash
    # The start script shows which compose command to use, or manually:
-   docker-compose -f docker-compose.dev.yml logs -f rhoai-dashboard
+   docker-compose -f podman-compose.dev.yml logs -f rhoai-dashboard
    # OR
-   podman-compose -f docker-compose.dev.yml logs -f rhoai-dashboard
+   podman-compose -f podman-compose.dev.yml logs -f rhoai-dashboard
    ```
 
 ### Advanced Usage
@@ -301,18 +301,18 @@ Edit `scripts/kwok-init.sh` to add additional Kubernetes resources.
 **Debug KWOK cluster:**
 ```bash
 # Execute commands in KWOK container (use your compose command)
-docker-compose -f docker-compose.dev.yml exec kwok-cluster kubectl get nodes
+docker-compose -f podman-compose.dev.yml exec kwok-cluster kubectl get nodes
 # OR
-podman-compose -f docker-compose.dev.yml exec kwok-cluster kubectl get nodes
+podman-compose -f podman-compose.dev.yml exec kwok-cluster kubectl get nodes
 
 # Port forward for direct access
-docker port $(docker-compose -f docker-compose.dev.yml ps -q kwok-cluster)
+docker port $(docker-compose -f podman-compose.dev.yml ps -q kwok-cluster)
 # OR
-podman port $(podman-compose -f docker-compose.dev.yml ps -q kwok-cluster)
+podman port $(podman-compose -f podman-compose.dev.yml ps -q kwok-cluster)
 ```
 
 **Use different KWOK version:**
-Update the image tag in `docker-compose.dev.yml`:
+Update the image tag in `podman-compose.dev.yml`:
 ```yaml
 image: registry.k8s.io/kwok/cluster:v0.5.0-k8s.v1.29.0
 ```

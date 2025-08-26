@@ -40,7 +40,7 @@ npm run build
 echo "✅ Local build successful! Now trying Docker/Podman build..."
 
 # Now try the container build
-if [ -f docker-compose.dev.yml ]; then
+if [ -f podman-compose.dev.yml ]; then
     if command -v podman-compose &> /dev/null; then
         COMPOSE_CMD="podman-compose"
     elif podman compose version &> /dev/null 2>&1; then
@@ -52,9 +52,9 @@ if [ -f docker-compose.dev.yml ]; then
     fi
     
     echo "🐳 Building containers with $COMPOSE_CMD..."
-    $COMPOSE_CMD -f docker-compose.dev.yml build --no-cache rhoai-dashboard
+    $COMPOSE_CMD -f podman-compose.dev.yml build --no-cache rhoai-dashboard
 else
-    echo "❌ docker-compose.dev.yml not found!"
+    echo "❌ podman-compose.dev.yml not found!"
     exit 1
 fi
 

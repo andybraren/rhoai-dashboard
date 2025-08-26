@@ -47,16 +47,16 @@ fi
 # Start the services
 echo "🐳 Starting services with podman compose..."
 echo "⚠️  Note: Frontend build may take 3-5 minutes due to large codebase..."
-podman compose -f docker-compose.dev.yml up --build -d
+podman compose -f podman-compose.dev.yml up --build -d
 
 echo "⏳ Waiting for services to be ready..."
 
 # Wait for KWOK cluster to be healthy
 echo "🔍 Waiting for KWOK cluster to be ready..."
-timeout 60 bash -c "until podman compose -f docker-compose.dev.yml exec kwok-cluster curl -sf http://localhost:8080/healthz > /dev/null 2>&1; do sleep 2; done" || {
+timeout 60 bash -c "until podman compose -f podman-compose.dev.yml exec kwok-cluster curl -sf http://localhost:8080/healthz > /dev/null 2>&1; do sleep 2; done" || {
     echo "❌ KWOK cluster failed to start within 60 seconds"
     echo "📋 Checking logs:"
-    podman compose -f docker-compose.dev.yml logs kwok-cluster
+    podman compose -f podman-compose.dev.yml logs kwok-cluster
     exit 1
 }
 
@@ -65,7 +65,7 @@ echo "🎯 Waiting for RHOAI Dashboard to be ready..."
 timeout 60 bash -c 'until curl -sf http://localhost:4010/api/status > /dev/null 2>&1; do sleep 2; done' || {
     echo "❌ Dashboard failed to start within 60 seconds"
     echo "📋 Checking logs:"
-    podman compose -f docker-compose.dev.yml logs rhoai-dashboard
+    podman compose -f podman-compose.dev.yml logs rhoai-dashboard
     exit 1
 }
 
@@ -78,12 +78,12 @@ echo "   • Dashboard UI: http://localhost:4010"
 echo "   • KWOK API Server: http://localhost:8080"
 echo ""
 echo "🔧 Useful Commands:"
-echo "   • View logs: podman compose -f docker-compose.dev.yml logs -f"
-echo "   • Stop services: podman compose -f docker-compose.dev.yml down"
-echo "   • Restart services: podman compose -f docker-compose.dev.yml restart"
+echo "   • View logs: podman compose -f podman-compose.dev.yml logs -f"
+echo "   • Stop services: podman compose -f podman-compose.dev.yml down"
+echo "   • Restart services: podman compose -f podman-compose.dev.yml restart"
 echo "   • Check KWOK status: curl http://localhost:8080/api/v1/nodes"
 echo ""
-echo "🗑️  To stop everything: podman compose -f docker-compose.dev.yml down"
+echo "🗑️  To stop everything: podman compose -f podman-compose.dev.yml down"
 
 # Open the dashboard in the default browser (optional)
 if command -v open &> /dev/null; then
