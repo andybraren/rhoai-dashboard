@@ -3,7 +3,7 @@ const path = require('path');
 const { merge } = require('webpack-merge');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
-const TerserJSPlugin = require('terser-webpack-plugin');
+
 const rimraf = require('rimraf');
 const { setupWebpackDotenvFilesForEnv, setupDotenvFilesForEnv } = require('./dotenv');
 
@@ -41,7 +41,7 @@ module.exports = merge(
     devtool: 'source-map',
     optimization: {
       minimize: true,
-      minimizer: [new TerserJSPlugin(), new CssMinimizerPlugin()],
+      minimizer: [new CssMinimizerPlugin()],
     },
     plugins: [
       new MiniCssExtractPlugin({
