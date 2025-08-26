@@ -44,7 +44,14 @@ If you prefer step-by-step control:
 
 2. **Start services:**
    ```bash
+   # With Docker
    docker-compose -f docker-compose.dev.yml up --build
+   
+   # With Podman (using podman-compose)
+   podman-compose -f docker-compose.dev.yml up --build
+   
+   # With Podman (using built-in compose)
+   podman compose -f docker-compose.dev.yml up --build
    ```
 
 3. **Access dashboard:**
@@ -56,12 +63,18 @@ If you prefer step-by-step control:
 1. Make code changes in your IDE
 2. For backend changes, rebuild the container:
    ```bash
+   # The start script auto-detects your compose command, or use manually:
    docker-compose -f docker-compose.dev.yml up --build rhoai-dashboard
+   # OR
+   podman-compose -f docker-compose.dev.yml up --build rhoai-dashboard
    ```
 3. Access dashboard at http://localhost:4010
 4. View logs:
    ```bash
+   # Use your detected compose command:
    docker-compose -f docker-compose.dev.yml logs -f
+   # OR
+   podman-compose -f docker-compose.dev.yml logs -f
    ```
 
 ## 🔍 Useful Commands
@@ -70,15 +83,22 @@ If you prefer step-by-step control:
 # Check cluster status
 curl http://localhost:8080/api/v1/nodes
 
-# View all services
+# View all services (use your compose command)
 docker-compose -f docker-compose.dev.yml ps
+# OR
+podman-compose -f docker-compose.dev.yml ps
 
 # Stop everything
 docker-compose -f docker-compose.dev.yml down
+# OR
+podman-compose -f docker-compose.dev.yml down
 
 # Reset everything (including volumes)
 docker-compose -f docker-compose.dev.yml down -v
 docker system prune -f
+# OR with Podman
+podman-compose -f docker-compose.dev.yml down -v
+podman system prune -f
 ```
 
 ## 🐛 Troubleshooting
@@ -89,9 +109,16 @@ docker system prune -f
 docker --version
 docker-compose --version
 
-# View detailed logs
+# OR check Podman status
+podman --version
+podman-compose --version  # or: podman compose version
+
+# View detailed logs (use your compose command)
 docker-compose -f docker-compose.dev.yml logs -f kwok-cluster
 docker-compose -f docker-compose.dev.yml logs -f rhoai-dashboard
+# OR
+podman-compose -f docker-compose.dev.yml logs -f kwok-cluster
+podman-compose -f docker-compose.dev.yml logs -f rhoai-dashboard
 ```
 
 ### Dashboard can't connect to KWOK
@@ -99,8 +126,10 @@ docker-compose -f docker-compose.dev.yml logs -f rhoai-dashboard
 # Test KWOK health
 curl http://localhost:8080/healthz
 
-# Test from dashboard container
+# Test from dashboard container (use your compose command)
 docker-compose -f docker-compose.dev.yml exec rhoai-dashboard curl http://kwok-cluster:8080/healthz
+# OR
+podman-compose -f docker-compose.dev.yml exec rhoai-dashboard curl http://kwok-cluster:8080/healthz
 ```
 
 ### Reset everything
@@ -108,6 +137,11 @@ docker-compose -f docker-compose.dev.yml exec rhoai-dashboard curl http://kwok-c
 # Nuclear option - clean everything
 docker-compose -f docker-compose.dev.yml down -v
 docker system prune -af
+# OR with Podman
+podman-compose -f docker-compose.dev.yml down -v
+podman system prune -af
+
+# Start fresh (auto-detects your container runtime)
 ./scripts/start-dev-with-kwok.sh
 ```
 
@@ -120,6 +154,7 @@ Key variables in `.env.local`:
 | `LOCAL_K8S` | Enable KWOK mode | `true` |
 | `KWOK_API_SERVER` | KWOK API URL | `http://kwok-cluster:8080` |
 | `OC_PROJECT` | Default namespace | `opendatahub` |
+| `CONTAINER_RUNTIME` | Container runtime | `docker` or `podman` |
 | `DISABLE_CLUSTER_VERSION_CHECK` | Skip OpenShift checks | `true` |
 
 ## 📚 Resources
@@ -127,6 +162,7 @@ Key variables in `.env.local`:
 - [KWOK Project](https://github.com/kubernetes-sigs/kwok)
 - [KWOK Documentation](https://kwok.sigs.k8s.io/)
 - [Docker Compose Reference](https://docs.docker.com/compose/)
+- [Podman Compose Documentation](https://github.com/containers/podman-compose)
 
 ## 🎯 Next Steps
 
