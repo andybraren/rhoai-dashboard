@@ -15,7 +15,7 @@ services:
       - kwok-data:/kwok
       - ./scripts/kwok-init.sh:/docker-entrypoint.d/kwok-init.sh:ro
       # Mount podman socket to give KWOK access to container runtime
-      - /run/user/${UID:-1000}/podman/podman.sock:/run/podman/podman.sock
+      - /run/user/${USER_ID:-1000}/podman/podman.sock:/run/podman/podman.sock
     privileged: true
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]

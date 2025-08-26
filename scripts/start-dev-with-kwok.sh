@@ -25,7 +25,7 @@ echo "🔧 Using: podman with 'podman compose'"
 
 # Set container runtime for KWOK
 export CONTAINER_RUNTIME="podman"
-export UID=$(id -u)
+export USER_ID=$(id -u)
 
 # Create .env.local file if it doesn't exist
 if [ ! -f .env.local ]; then
