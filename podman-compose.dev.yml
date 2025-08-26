@@ -9,11 +9,14 @@ services:
       - "8080:8080"   # KWOK cluster API server
     environment:
       - KWOK_KUBE_APISERVER_PORT=8080
-      - KWOK_RUNTIME=docker
+      - KWOK_RUNTIME=podman
       - KWOK_CONTROLLER_PORT=10247
     volumes:
       - kwok-data:/kwok
       - ./scripts/kwok-init.sh:/docker-entrypoint.d/kwok-init.sh:ro
+      # Mount podman socket to give KWOK access to container runtime
+      - /run/user/${UID:-1000}/podman/podman.sock:/run/podman/podman.sock
+    privileged: true
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
       interval: 10s
