@@ -4,7 +4,7 @@ ARG SOURCE_CODE=.
 # Use ubi9/nodejs-20 as default base image
 ARG BASE_IMAGE="registry.access.redhat.com/ubi9/nodejs-20:latest"
 
-FROM ${BASE_IMAGE} as builder
+FROM ${BASE_IMAGE}
 
 ## Build args to be used at this step
 ARG SOURCE_CODE
@@ -17,43 +17,58 @@ COPY --chown=default:root ${SOURCE_CODE} /usr/src/app
 # Change file ownership to the assemble user
 USER default
 
+# Clean npm cache
 RUN npm cache clean --force
 
+# Install dependencies at root level (this will install frontend and backend via postinstall)
 RUN npm ci --omit=optional --ignore-scripts
+
+# Install frontend and backend dependencies
 RUN cd frontend && npm ci --omit=optional --ignore-scripts
 RUN cd backend && npm ci --omit=optional --ignore-scripts
 
-# Increase Node.js memory limit for the build process
+# Create logs directory
+RUN mkdir -p /usr/src/app/logs && chmod 775 /usr/src/app/logs
+
+# Set up environment for development
+ENV NODE_ENV=development
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN npm run build
 
-# Install only production dependencies
-# This is needed to remove the dev dependencies that were installed in the previous step
-RUN cd backend && npm prune --omit=dev
+# Set development server configuration
+ENV ODH_HOST=0.0.0.0
+ENV ODH_PORT=3000
+ENV BACKEND_PORT=8080
 
-FROM ${BASE_IMAGE} as runtime
+# For external cluster development
+ENV EXT_CLUSTER=true
+ENV LOCAL_K8S=true
 
-WORKDIR /usr/src/app
+# Expose ports for frontend dev server and backend
+EXPOSE 3000 8080
 
-RUN mkdir /usr/src/app/logs && chmod 775 /usr/src/app/logs
+# Create startup script to run both frontend and backend
+RUN echo '#!/bin/bash\n\
+set -e\n\
+echo "Starting RHOAI Dashboard in development mode..."\n\
+\n\
+# Start backend in background\n\
+echo "Starting backend server on port 8080..."\n\
+cd /usr/src/app/backend && npm run start:dev &\n\
+BACKEND_PID=$!\n\
+\n\
+# Start frontend\n\
+echo "Starting frontend development server on port 3000..."\n\
+cd /usr/src/app/frontend && npm run start:dev:ext &\n\
+FRONTEND_PID=$!\n\
+\n\
+# Wait for both processes\n\
+wait $BACKEND_PID $FRONTEND_PID\n\
+' > /usr/src/app/start-dev.sh && chmod +x /usr/src/app/start-dev.sh
 
-USER 1001:0
-
-COPY --chown=default:root --from=builder /usr/src/app/frontend/public /usr/src/app/frontend/public
-COPY --chown=default:root --from=builder /usr/src/app/backend/package.json /usr/src/app/backend/package.json
-COPY --chown=default:root --from=builder /usr/src/app/backend/package-lock.json /usr/src/app/backend/package-lock.json
-COPY --chown=default:root --from=builder /usr/src/app/backend/node_modules /usr/src/app/backend/node_modules
-COPY --chown=default:root --from=builder /usr/src/app/backend/dist /usr/src/app/backend/dist
-COPY --chown=default:root --from=builder /usr/src/app/.npmrc /usr/src/app/backend/.npmrc
-COPY --chown=default:root --from=builder /usr/src/app/.env /usr/src/app/.env
-COPY --chown=default:root --from=builder /usr/src/app/data /usr/src/app/data
-
-WORKDIR /usr/src/app/backend
-
-CMD ["npm", "run", "start"]
+CMD ["/usr/src/app/start-dev.sh"]
 
 LABEL io.opendatahub.component="odh-dashboard" \
-      io.k8s.display-name="odh-dashboard" \
-      name="open-data-hub/odh-dashboard-ubi9" \
-      summary="odh-dashboard" \
-      description="Open Data Hub Dashboard"
+      io.k8s.display-name="odh-dashboard-dev" \
+      name="open-data-hub/odh-dashboard-dev" \
+      summary="odh-dashboard-development" \
+      description="Open Data Hub Dashboard - Development Mode"

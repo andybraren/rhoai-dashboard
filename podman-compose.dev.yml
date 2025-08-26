@@ -9,7 +9,7 @@ services:
       - "8080:8080"   # KWOK cluster API server
     environment:
       - KWOK_KUBE_APISERVER_PORT=8080
-      - KWOK_RUNTIME=${CONTAINER_RUNTIME:-docker}
+      - KWOK_RUNTIME=docker
       - KWOK_CONTROLLER_PORT=10247
     volumes:
       - kwok-data:/kwok
@@ -32,12 +32,17 @@ services:
         - NODE_OPTIONS=--max-old-space-size=4096
     container_name: rhoai-dashboard
     ports:
-      - "4010:8080"   # Dashboard UI
+      - "4010:3000"   # Frontend Development Server
+      - "4011:8080"   # Backend Development Server
     environment:
       - APP_ENV=development
+      - NODE_ENV=development
       - BACKEND_PORT=8080
+      - ODH_PORT=3000
+      - ODH_HOST=0.0.0.0
       - LOG_LEVEL=info
       - LOCAL_K8S=true
+      - EXT_CLUSTER=true
       - KWOK_API_SERVER=http://kwok-cluster:8080
       - OC_PROJECT=opendatahub
       # Disable OpenShift-specific features for local dev

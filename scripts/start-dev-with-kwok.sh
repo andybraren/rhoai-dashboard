@@ -61,9 +61,17 @@ timeout 60 bash -c "until podman compose -f podman-compose.dev.yml exec kwok-clu
 }
 
 # Wait for dashboard to be ready
-echo "🎯 Waiting for RHOAI Dashboard to be ready..."
-timeout 60 bash -c 'until curl -sf http://localhost:4010/api/status > /dev/null 2>&1; do sleep 2; done' || {
-    echo "❌ Dashboard failed to start within 60 seconds"
+echo "🎯 Waiting for RHOAI Dashboard frontend to be ready..."
+timeout 90 bash -c 'until curl -sf http://localhost:4010 > /dev/null 2>&1; do sleep 3; done' || {
+    echo "❌ Dashboard frontend failed to start within 90 seconds"
+    echo "📋 Checking logs:"
+    podman compose -f podman-compose.dev.yml logs rhoai-dashboard
+    exit 1
+}
+
+echo "🎯 Waiting for RHOAI Dashboard backend to be ready..."
+timeout 60 bash -c 'until curl -sf http://localhost:4011/api/status > /dev/null 2>&1; do sleep 2; done' || {
+    echo "❌ Dashboard backend failed to start within 60 seconds"
     echo "📋 Checking logs:"
     podman compose -f podman-compose.dev.yml logs rhoai-dashboard
     exit 1
@@ -74,7 +82,8 @@ echo ""
 echo "🎉 RHOAI Dashboard is now running with local KWOK cluster!"
 echo ""
 echo "📋 Access Information:"
-echo "   • Dashboard UI: http://localhost:4010"
+echo "   • Dashboard UI (Frontend): http://localhost:4010"
+echo "   • Dashboard API (Backend): http://localhost:4011"
 echo "   • KWOK API Server: http://localhost:8080"
 echo ""
 echo "🔧 Useful Commands:"
