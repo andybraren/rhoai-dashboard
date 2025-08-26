@@ -70,6 +70,7 @@ fi
 
 # Start the services
 echo "🐳 Starting services with $COMPOSE_CMD..."
+echo "⚠️  Note: Frontend build may take 3-5 minutes due to large codebase..."
 $COMPOSE_CMD -f docker-compose.dev.yml up --build -d
 
 echo "⏳ Waiting for services to be ready..."

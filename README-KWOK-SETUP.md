@@ -121,6 +121,22 @@ podman-compose -f docker-compose.dev.yml logs -f kwok-cluster
 podman-compose -f docker-compose.dev.yml logs -f rhoai-dashboard
 ```
 
+### Frontend build fails with memory errors
+```bash
+# If you see "JavaScript heap out of memory" errors:
+
+# Option 1: Use the build fix script
+./scripts/build-fix.sh
+
+# Option 2: Manual fix - increase available memory
+export NODE_OPTIONS="--max-old-space-size=6144"  # 6GB
+docker-compose -f docker-compose.dev.yml build --no-cache rhoai-dashboard
+
+# Option 3: Build locally first, then containerize
+npm run build  # Build locally first
+docker-compose -f docker-compose.dev.yml up --build
+```
+
 ### Dashboard can't connect to KWOK
 ```bash
 # Test KWOK health

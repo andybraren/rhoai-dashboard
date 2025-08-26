@@ -23,6 +23,8 @@ RUN npm ci --omit=optional --ignore-scripts
 RUN cd frontend && npm ci --omit=optional --ignore-scripts
 RUN cd backend && npm ci --omit=optional --ignore-scripts
 
+# Increase Node.js memory limit for the build process
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run build
 
 # Install only production dependencies

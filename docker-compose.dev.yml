@@ -28,6 +28,8 @@ services:
     build:
       context: .
       dockerfile: Containerfile
+      args:
+        - NODE_OPTIONS=--max-old-space-size=4096
     container_name: rhoai-dashboard
     ports:
       - "4010:8080"   # Dashboard UI
