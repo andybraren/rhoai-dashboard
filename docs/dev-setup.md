@@ -4,6 +4,16 @@
 
 ODH requires the following to run:
 
+### For Local Development (Recommended)
+
+- [NodeJS and NPM](https://nodejs.org/)
+  - Node recommended version -> `20.18.0`
+  - NPM recommended version -> `10.8.2`
+- [Docker](https://docs.docker.com/get-docker/) or [Podman](https://github.com/containers/podman)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+
+### For External Cluster Development
+
 - [NodeJS and NPM](https://nodejs.org/)
   - Node recommended version -> `20.18.0`
   - NPM recommended version -> `10.8.2`
@@ -38,6 +48,37 @@ npm run build
 ### Serve development content
 
 This is the default context for running a local UI. Make sure you build the project using the instructions above prior to running the command below.
+
+#### Option 1: Local Development with KWOK (Recommended)
+
+For a simplified development experience without needing external cluster access, use the local KWOK setup:
+
+```bash
+# Quick start with KWOK
+./scripts/start-dev-with-kwok.sh
+```
+
+This will:
+- Start a local KWOK cluster (simulated Kubernetes)
+- Launch the RHOAI Dashboard 
+- Configure everything automatically
+- Open the dashboard at http://localhost:4010
+
+**Manual KWOK setup:**
+
+1. Copy the environment template:
+   ```bash
+   cp env.local.example .env.local
+   ```
+
+2. Start services with Docker Compose:
+   ```bash
+   docker-compose -f docker-compose.dev.yml up --build
+   ```
+
+3. Access the dashboard at http://localhost:4010
+
+#### Option 2: External OpenShift Cluster
 
 > Note: You must be logged-in with `oc` before you can start the backend. Details for that are in the the [contribution guidelines](../CONTRIBUTING.md#give-your-dev-env-access).
 
@@ -99,3 +140,149 @@ The [manifests](../manifests) folder contains a [kustomize](https://kustomize.io
 > Note: This flow is deprecated, deploy v2 [Operator](https://github.com/opendatahub-io/opendatahub-operator) with their custom CR.
 
 The [manifests/kfdef](../manifests/kfdef) folder contains an example kfdef to deploy ODH Dashboard with the Notebook Controller backend is located in [odh-dashboard-kfnbc-test.yaml](../manifests/kfdef/odh-dashboard-kfnbc-test.yaml).
+
+## Local Development with KWOK
+
+[KWOK (Kubernetes WithOut Kubelet)](https://github.com/kubernetes-sigs/kwok) is a lightweight Kubernetes simulator that allows you to run the RHOAI Dashboard without needing access to an external OpenShift cluster. This is the recommended approach for development.
+
+### Why KWOK?
+
+- **No external dependencies**: No need for `oc login` or cluster access
+- **Fast startup**: Cluster starts in seconds, not minutes
+- **Lightweight**: Minimal resource consumption on your laptop
+- **Consistent**: Same environment for all developers
+- **Simulated**: Can simulate thousands of nodes and pods for testing
+
+### KWOK Architecture
+
+```
+┌─────────────────┐    ┌──────────────────┐
+│  RHOAI Dashboard│────│  KWOK Cluster    │
+│  (Port 4010)    │    │  (Port 8080)     │
+│                 │    │                  │
+│  Frontend ──────┼────┼─▶ Kubernetes API │
+│  Backend  ──────┘    │   - Simulated    │
+└─────────────────┘    │   - OpenShift    │
+                       │     compatible   │
+                       └──────────────────┘
+```
+
+### Quick Start
+
+1. **One-command setup:**
+   ```bash
+   ./scripts/start-dev-with-kwok.sh
+   ```
+
+2. **Access the dashboard:**
+   - Dashboard: http://localhost:4010
+   - KWOK API: http://localhost:8080
+
+### Manual Setup
+
+If you prefer manual control:
+
+1. **Copy environment configuration:**
+   ```bash
+   cp env.local.example .env.local
+   ```
+
+2. **Start services:**
+   ```bash
+   docker-compose -f docker-compose.dev.yml up --build
+   ```
+
+3. **Verify setup:**
+   ```bash
+   # Check KWOK cluster status
+   curl http://localhost:8080/api/v1/nodes
+   
+   # Check dashboard status
+   curl http://localhost:4010/api/status
+   ```
+
+### Environment Variables
+
+Key environment variables for KWOK development:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `LOCAL_K8S` | Enable local KWOK mode | `true` |
+| `KWOK_API_SERVER` | KWOK API server URL | `http://kwok-cluster:8080` |
+| `OC_PROJECT` | Default namespace | `opendatahub` |
+| `DISABLE_CLUSTER_VERSION_CHECK` | Skip OpenShift version checks | `true` |
+| `DISABLE_CONSOLE_CONFIG_CHECK` | Skip console config checks | `true` |
+
+### What's Pre-configured
+
+The KWOK cluster comes pre-configured with:
+
+- **Namespaces**: `opendatahub`, `openshift-console`
+- **CRDs**: `ClusterVersion`, `OdhDashboardConfig`
+- **Sample resources**: 3 simulated worker nodes
+- **RBAC**: Basic permissions for dashboard
+- **ConfigMaps**: Console configuration for OpenShift compatibility
+
+### Troubleshooting
+
+**Services won't start:**
+```bash
+# Check Docker/Podman status
+docker --version
+docker-compose --version
+
+# View logs
+docker-compose -f docker-compose.dev.yml logs -f
+```
+
+**Dashboard can't connect to KWOK:**
+```bash
+# Verify KWOK is healthy
+docker-compose -f docker-compose.dev.yml exec kwok-cluster curl http://localhost:8080/healthz
+
+# Check network connectivity
+docker-compose -f docker-compose.dev.yml exec rhoai-dashboard curl http://kwok-cluster:8080/healthz
+```
+
+**Reset everything:**
+```bash
+# Stop and remove all containers/volumes
+docker-compose -f docker-compose.dev.yml down -v
+docker system prune -f
+
+# Start fresh
+./scripts/start-dev-with-kwok.sh
+```
+
+### Development Workflow
+
+1. **Make code changes** in your IDE
+2. **Rebuild containers** (if needed):
+   ```bash
+   docker-compose -f docker-compose.dev.yml up --build rhoai-dashboard
+   ```
+3. **Test changes** at http://localhost:4010
+4. **View logs**:
+   ```bash
+   docker-compose -f docker-compose.dev.yml logs -f rhoai-dashboard
+   ```
+
+### Advanced Usage
+
+**Add custom resources to KWOK:**
+Edit `scripts/kwok-init.sh` to add additional Kubernetes resources.
+
+**Debug KWOK cluster:**
+```bash
+# Execute commands in KWOK container
+docker-compose -f docker-compose.dev.yml exec kwok-cluster kubectl get nodes
+
+# Port forward for direct access
+docker port $(docker-compose -f docker-compose.dev.yml ps -q kwok-cluster)
+```
+
+**Use different KWOK version:**
+Update the image tag in `docker-compose.dev.yml`:
+```yaml
+image: registry.k8s.io/kwok/cluster:v0.5.0-k8s.v1.29.0
+```

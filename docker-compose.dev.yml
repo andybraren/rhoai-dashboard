@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # KWOK - Kubernetes WithOut Kubelet simulator
+  kwok-cluster:
+    image: registry.k8s.io/kwok/cluster:v0.4.0-k8s.v1.28.0
+    container_name: rhoai-kwok-cluster
+    ports:
+      - "8080:8080"   # KWOK cluster API server
+    environment:
+      - KWOK_KUBE_APISERVER_PORT=8080
+      - KWOK_RUNTIME=docker
+      - KWOK_CONTROLLER_PORT=10247
+    volumes:
+      - kwok-data:/kwok
+      - ./scripts/kwok-init.sh:/docker-entrypoint.d/kwok-init.sh:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - rhoai-dev
+
+  # RHOAI Dashboard
+  rhoai-dashboard:
+    build:
+      context: .
+      dockerfile: Containerfile
+    container_name: rhoai-dashboard
+    ports:
+      - "4010:8080"   # Dashboard UI
+    environment:
+      - APP_ENV=development
+      - BACKEND_PORT=8080
+      - LOG_LEVEL=info
+      - LOCAL_K8S=true
+      - KWOK_API_SERVER=http://kwok-cluster:8080
+      - OC_PROJECT=opendatahub
+      # Disable OpenShift-specific features for local dev
+      - DISABLE_CLUSTER_VERSION_CHECK=true
+      - DISABLE_CONSOLE_CONFIG_CHECK=true
+    depends_on:
+      kwok-cluster:
+        condition: service_healthy
+    networks:
+      - rhoai-dev
+    volumes:
+      - ./logs:/usr/src/app/logs
+
+volumes:
+  kwok-data:
+
+networks:
+  rhoai-dev:
+    driver: bridge
