@@ -7,48 +7,24 @@ set -e
 
 echo "🚀 Starting RHOAI Dashboard with local KWOK cluster..."
 
-# Detect available container runtime and compose command
-CONTAINER_CMD=""
-COMPOSE_CMD=""
-
-if command -v podman &> /dev/null; then
-    CONTAINER_CMD="podman"
-    if command -v podman-compose &> /dev/null; then
-        COMPOSE_CMD="podman-compose"
-    elif podman compose version &> /dev/null; then
-        COMPOSE_CMD="podman compose"
-    fi
-elif command -v docker &> /dev/null; then
-    CONTAINER_CMD="docker"
-    if command -v docker-compose &> /dev/null; then
-        COMPOSE_CMD="docker-compose"
-    elif docker compose version &> /dev/null; then
-        COMPOSE_CMD="docker compose"
-    fi
-fi
-
-if [ -z "$CONTAINER_CMD" ]; then
-    echo "❌ Neither Docker nor Podman is available. Please install one of them."
-    echo "   • Docker: https://docs.docker.com/get-docker/"
+# Check if podman is available
+if ! command -v podman &> /dev/null; then
+    echo "❌ Podman is not available. Please install Podman."
     echo "   • Podman: https://podman.io/getting-started/installation"
     exit 1
 fi
 
-if [ -z "$COMPOSE_CMD" ]; then
-    echo "❌ No compose command available. Please install:"
-    if [ "$CONTAINER_CMD" = "podman" ]; then
-        echo "   • Podman Compose: dnf install podman-compose (or pip install podman-compose)"
-        echo "   • Or use built-in: podman compose (requires Podman 3.0+)"
-    else
-        echo "   • Docker Compose: https://docs.docker.com/compose/install/"
-    fi
+# Check if podman compose is available
+if ! podman compose version &> /dev/null; then
+    echo "❌ Podman compose is not available. Please install or upgrade Podman."
+    echo "   • Requires Podman 3.0+ with compose plugin"
     exit 1
 fi
 
-echo "🔧 Using: $CONTAINER_CMD with '$COMPOSE_CMD'"
+echo "🔧 Using: podman with 'podman compose'"
 
 # Set container runtime for KWOK
-export CONTAINER_RUNTIME="$CONTAINER_CMD"
+export CONTAINER_RUNTIME="podman"
 
 # Create .env.local file if it doesn't exist
 if [ ! -f .env.local ]; then
@@ -61,7 +37,7 @@ OC_PROJECT=opendatahub
 APP_ENV=development
 DISABLE_CLUSTER_VERSION_CHECK=true
 DISABLE_CONSOLE_CONFIG_CHECK=true
-CONTAINER_RUNTIME=$CONTAINER_CMD
+CONTAINER_RUNTIME=podman
 EOF
     echo "✅ Created .env.local with KWOK configuration"
 else
@@ -69,18 +45,18 @@ else
 fi
 
 # Start the services
-echo "🐳 Starting services with $COMPOSE_CMD..."
+echo "🐳 Starting services with podman compose..."
 echo "⚠️  Note: Frontend build may take 3-5 minutes due to large codebase..."
-$COMPOSE_CMD -f docker-compose.dev.yml up --build -d
+podman compose -f docker-compose.dev.yml up --build -d
 
 echo "⏳ Waiting for services to be ready..."
 
 # Wait for KWOK cluster to be healthy
 echo "🔍 Waiting for KWOK cluster to be ready..."
-timeout 60 bash -c "until $COMPOSE_CMD -f docker-compose.dev.yml exec kwok-cluster curl -sf http://localhost:8080/healthz > /dev/null 2>&1; do sleep 2; done" || {
+timeout 60 bash -c "until podman compose -f docker-compose.dev.yml exec kwok-cluster curl -sf http://localhost:8080/healthz > /dev/null 2>&1; do sleep 2; done" || {
     echo "❌ KWOK cluster failed to start within 60 seconds"
     echo "📋 Checking logs:"
-    $COMPOSE_CMD -f docker-compose.dev.yml logs kwok-cluster
+    podman compose -f docker-compose.dev.yml logs kwok-cluster
     exit 1
 }
 
@@ -89,7 +65,7 @@ echo "🎯 Waiting for RHOAI Dashboard to be ready..."
 timeout 60 bash -c 'until curl -sf http://localhost:4010/api/status > /dev/null 2>&1; do sleep 2; done' || {
     echo "❌ Dashboard failed to start within 60 seconds"
     echo "📋 Checking logs:"
-    $COMPOSE_CMD -f docker-compose.dev.yml logs rhoai-dashboard
+    podman compose -f docker-compose.dev.yml logs rhoai-dashboard
     exit 1
 }
 
@@ -102,12 +78,12 @@ echo "   • Dashboard UI: http://localhost:4010"
 echo "   • KWOK API Server: http://localhost:8080"
 echo ""
 echo "🔧 Useful Commands:"
-echo "   • View logs: $COMPOSE_CMD -f docker-compose.dev.yml logs -f"
-echo "   • Stop services: $COMPOSE_CMD -f docker-compose.dev.yml down"
-echo "   • Restart services: $COMPOSE_CMD -f docker-compose.dev.yml restart"
+echo "   • View logs: podman compose -f docker-compose.dev.yml logs -f"
+echo "   • Stop services: podman compose -f docker-compose.dev.yml down"
+echo "   • Restart services: podman compose -f docker-compose.dev.yml restart"
 echo "   • Check KWOK status: curl http://localhost:8080/api/v1/nodes"
 echo ""
-echo "🗑️  To stop everything: $COMPOSE_CMD -f docker-compose.dev.yml down"
+echo "🗑️  To stop everything: podman compose -f docker-compose.dev.yml down"
 
 # Open the dashboard in the default browser (optional)
 if command -v open &> /dev/null; then
