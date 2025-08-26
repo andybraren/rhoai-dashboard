@@ -9,8 +9,9 @@ ODH requires the following to run:
 - [NodeJS and NPM](https://nodejs.org/)
   - Node recommended version -> `20.18.0`
   - NPM recommended version -> `10.8.2`
-- [Docker](https://docs.docker.com/get-docker/) or [Podman](https://github.com/containers/podman)
-- [Docker Compose](https://docs.docker.com/compose/install/)
+- Container Runtime:
+  - [Docker](https://docs.docker.com/get-docker/) with [Docker Compose](https://docs.docker.com/compose/install/), OR
+  - [Podman](https://podman.io/getting-started/installation) with `podman-compose` or built-in `podman compose`
 
 ### For External Cluster Development
 
@@ -71,9 +72,16 @@ This will:
    cp env.local.example .env.local
    ```
 
-2. Start services with Docker Compose:
+2. Start services with Docker Compose or Podman Compose:
    ```bash
+   # With Docker
    docker-compose -f docker-compose.dev.yml up --build
+   
+   # With Podman (using podman-compose)
+   podman-compose -f docker-compose.dev.yml up --build
+   
+   # With Podman (using built-in compose)
+   podman compose -f docker-compose.dev.yml up --build
    ```
 
 3. Access the dashboard at http://localhost:4010
@@ -227,18 +235,26 @@ The KWOK cluster comes pre-configured with:
 
 **Services won't start:**
 ```bash
-# Check Docker/Podman status
+# Check Docker status
 docker --version
 docker-compose --version
 
-# View logs
+# OR check Podman status
+podman --version
+podman-compose --version  # or: podman compose version
+
+# View logs (use appropriate compose command)
 docker-compose -f docker-compose.dev.yml logs -f
+# OR
+podman-compose -f docker-compose.dev.yml logs -f
 ```
 
 **Dashboard can't connect to KWOK:**
 ```bash
-# Verify KWOK is healthy
+# Verify KWOK is healthy (use your compose command)
 docker-compose -f docker-compose.dev.yml exec kwok-cluster curl http://localhost:8080/healthz
+# OR
+podman-compose -f docker-compose.dev.yml exec kwok-cluster curl http://localhost:8080/healthz
 
 # Check network connectivity
 docker-compose -f docker-compose.dev.yml exec rhoai-dashboard curl http://kwok-cluster:8080/healthz
@@ -246,9 +262,13 @@ docker-compose -f docker-compose.dev.yml exec rhoai-dashboard curl http://kwok-c
 
 **Reset everything:**
 ```bash
-# Stop and remove all containers/volumes
+# Stop and remove all containers/volumes (use your compose command)
 docker-compose -f docker-compose.dev.yml down -v
 docker system prune -f
+
+# OR with Podman
+podman-compose -f docker-compose.dev.yml down -v
+podman system prune -f
 
 # Start fresh
 ./scripts/start-dev-with-kwok.sh
@@ -259,12 +279,18 @@ docker system prune -f
 1. **Make code changes** in your IDE
 2. **Rebuild containers** (if needed):
    ```bash
+   # Use your detected compose command, or manually:
    docker-compose -f docker-compose.dev.yml up --build rhoai-dashboard
+   # OR
+   podman-compose -f docker-compose.dev.yml up --build rhoai-dashboard
    ```
 3. **Test changes** at http://localhost:4010
 4. **View logs**:
    ```bash
+   # The start script shows which compose command to use, or manually:
    docker-compose -f docker-compose.dev.yml logs -f rhoai-dashboard
+   # OR
+   podman-compose -f docker-compose.dev.yml logs -f rhoai-dashboard
    ```
 
 ### Advanced Usage
@@ -274,11 +300,15 @@ Edit `scripts/kwok-init.sh` to add additional Kubernetes resources.
 
 **Debug KWOK cluster:**
 ```bash
-# Execute commands in KWOK container
+# Execute commands in KWOK container (use your compose command)
 docker-compose -f docker-compose.dev.yml exec kwok-cluster kubectl get nodes
+# OR
+podman-compose -f docker-compose.dev.yml exec kwok-cluster kubectl get nodes
 
 # Port forward for direct access
 docker port $(docker-compose -f docker-compose.dev.yml ps -q kwok-cluster)
+# OR
+podman port $(podman-compose -f docker-compose.dev.yml ps -q kwok-cluster)
 ```
 
 **Use different KWOK version:**

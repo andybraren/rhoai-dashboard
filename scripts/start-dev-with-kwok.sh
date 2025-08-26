@@ -47,6 +47,9 @@ fi
 
 echo "🔧 Using: $CONTAINER_CMD with '$COMPOSE_CMD'"
 
+# Set container runtime for KWOK
+export CONTAINER_RUNTIME="$CONTAINER_CMD"
+
 # Create .env.local file if it doesn't exist
 if [ ! -f .env.local ]; then
     echo "📝 Creating .env.local file..."
@@ -58,6 +61,7 @@ OC_PROJECT=opendatahub
 APP_ENV=development
 DISABLE_CLUSTER_VERSION_CHECK=true
 DISABLE_CONSOLE_CONFIG_CHECK=true
+CONTAINER_RUNTIME=$CONTAINER_CMD
 EOF
     echo "✅ Created .env.local with KWOK configuration"
 else
@@ -97,12 +101,12 @@ echo "   • Dashboard UI: http://localhost:4010"
 echo "   • KWOK API Server: http://localhost:8080"
 echo ""
 echo "🔧 Useful Commands:"
-echo "   • View logs: docker-compose -f docker-compose.dev.yml logs -f"
-echo "   • Stop services: docker-compose -f docker-compose.dev.yml down"
-echo "   • Restart services: docker-compose -f docker-compose.dev.yml restart"
+echo "   • View logs: $COMPOSE_CMD -f docker-compose.dev.yml logs -f"
+echo "   • Stop services: $COMPOSE_CMD -f docker-compose.dev.yml down"
+echo "   • Restart services: $COMPOSE_CMD -f docker-compose.dev.yml restart"
 echo "   • Check KWOK status: curl http://localhost:8080/api/v1/nodes"
 echo ""
-echo "🗑️  To stop everything: docker-compose -f docker-compose.dev.yml down"
+echo "🗑️  To stop everything: $COMPOSE_CMD -f docker-compose.dev.yml down"
 
 # Open the dashboard in the default browser (optional)
 if command -v open &> /dev/null; then

@@ -9,7 +9,7 @@ services:
       - "8080:8080"   # KWOK cluster API server
     environment:
       - KWOK_KUBE_APISERVER_PORT=8080
-      - KWOK_RUNTIME=docker
+      - KWOK_RUNTIME=${CONTAINER_RUNTIME:-docker}
       - KWOK_CONTROLLER_PORT=10247
     volumes:
       - kwok-data:/kwok
